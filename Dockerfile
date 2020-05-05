@@ -1,5 +1,5 @@
 FROM golang:1.14-alpine AS builder
-WORKDIR /go/src/github.com/adeo/dp--infra-nifi-exporter
+WORKDIR /go/src/github.com/diarworld/nifi_exporter
 COPY . .
 RUN CGO_ENABLED=0 go build -ldflags="-w -s" -o /go/bin/nifi_exporter
 

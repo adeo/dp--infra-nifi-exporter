@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/adeo/dp--infra-nifi-exporter/nifi/client"
-	"github.com/adeo/dp--infra-nifi-exporter/nifi/collectors"
+	"github.com/diarworld/nifi_exporter/nifi/client"
+	"github.com/diarworld/nifi_exporter/nifi/collectors"
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/juju/errors"

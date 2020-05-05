@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/adeo/dp--infra-nifi-exporter/nifi/client"
+	"github.com/diarworld/nifi_exporter/nifi/client"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
