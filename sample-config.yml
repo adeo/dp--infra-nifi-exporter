@@ -1,6 +1,11 @@
 ---
 exporter:
   listenAddress: 0.0.0.0:9103
+  collectCluster: true
+  collectDiagnostics: true
+  collectCounters: true
+  collectProcessGroups: true
+  collectConnections: true
 nodes:
   - url: http://test-nifi.example.com:8080
     username: nifitest

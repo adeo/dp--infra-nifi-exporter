@@ -8,11 +8,11 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/adeo/dp--infra-nifi-exporter/nifi/client"
+	"github.com/adeo/dp--infra-nifi-exporter/nifi/collectors"
 	"github.com/go-playground/locales/en"
-	"github.com/go-playground/universal-translator"
+	ut "github.com/go-playground/universal-translator"
 	"github.com/juju/errors"
-	"github.com/msiedlarek/nifi_exporter/nifi/client"
-	"github.com/msiedlarek/nifi_exporter/nifi/collectors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -23,7 +23,12 @@ import (
 
 type Configuration struct {
 	Exporter struct {
-		ListenAddress string `yaml:"listenAddress" validate:"required"`
+		ListenAddress        string `yaml:"listenAddress" validate:"required"`
+		CollectCluster       bool   `yaml:"collectCluster"`
+		CollectDiagnostics   bool   `yaml:"collectDiagnostics"`
+		CollectCounters      bool   `yaml:"collectCounters"`
+		CollectProcessGroups bool   `yaml:"collectProcessGroups"`
+		CollectConnections   bool   `yaml:"collectConnections"`
 	} `yaml:"exporter" validate:"required"`
 	Nodes []struct {
 		URL            string            `yaml:"url" validate:"required,url"`
@@ -104,21 +109,39 @@ func start(config *Configuration) error {
 			return errors.Annotate(err, "Couldn't create Prometheus API client")
 		}
 		log.WithFields(log.Fields{
-			"labels":   node.Labels,
-			"url":      node.URL,
-			"username": node.Username,
+			"labels":               node.Labels,
+			"url":                  node.URL,
+			"username":             node.Username,
+			"collectCluster":       config.Exporter.CollectCluster,
+			"collectDiagnostics":   config.Exporter.CollectDiagnostics,
+			"collectCounters":      config.Exporter.CollectCounters,
+			"collectProcessGroups": config.Exporter.CollectProcessGroups,
+			"collectConnections":   config.Exporter.CollectConnections,
 		}).Info("Registering NiFi node...")
-		if err := prometheus.DefaultRegisterer.Register(collectors.NewDiagnosticsCollector(api, node.Labels)); err != nil {
-			return errors.Annotate(err, "Couldn't register system diagnostics collector.")
+		if config.Exporter.CollectCluster {
+			if err := prometheus.DefaultRegisterer.Register(collectors.NewClusterCollector(api, node.Labels)); err != nil {
+				return errors.Annotate(err, "Couldn't register system cluster collector.")
+			}
 		}
-		if err := prometheus.DefaultRegisterer.Register(collectors.NewCountersCollector(api, node.Labels)); err != nil {
-			return errors.Annotate(err, "Couldn't register counters collector.")
+		if config.Exporter.CollectDiagnostics {
+			if err := prometheus.DefaultRegisterer.Register(collectors.NewDiagnosticsCollector(api, node.Labels)); err != nil {
+				return errors.Annotate(err, "Couldn't register system diagnostics collector.")
+			}
 		}
-		if err := prometheus.DefaultRegisterer.Register(collectors.NewProcessGroupsCollector(api, node.Labels)); err != nil {
-			return errors.Annotate(err, "Couldn't register process groups collector.")
+		if config.Exporter.CollectCounters {
+			if err := prometheus.DefaultRegisterer.Register(collectors.NewCountersCollector(api, node.Labels)); err != nil {
+				return errors.Annotate(err, "Couldn't register counters collector.")
+			}
 		}
-		if err := prometheus.DefaultRegisterer.Register(collectors.NewConnectionsCollector(api, node.Labels)); err != nil {
-			return errors.Annotate(err, "Couldn't register connections collector.")
+		if config.Exporter.CollectProcessGroups {
+			if err := prometheus.DefaultRegisterer.Register(collectors.NewProcessGroupsCollector(api, node.Labels)); err != nil {
+				return errors.Annotate(err, "Couldn't register process groups collector.")
+			}
+		}
+		if config.Exporter.CollectConnections {
+			if err := prometheus.DefaultRegisterer.Register(collectors.NewConnectionsCollector(api, node.Labels)); err != nil {
+				return errors.Annotate(err, "Couldn't register connections collector.")
+			}
 		}
 	}
 

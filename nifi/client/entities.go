@@ -707,3 +707,28 @@ type SystemDiagnosticsDTO struct {
 type SystemDiagnosticsEntity struct {
 	SystemDiagnostics SystemDiagnosticsDTO `json:"systemDiagnostics"`
 }
+
+type EventsNodeClusterDTO struct {
+	Timestamp string `json:"timestamp"`
+	Category  string `json:"category"`
+	Message   string `json:"message"`
+}
+
+type NodeClusterDTO struct {
+	NodeID            string                 `json:"nodeId"`
+	Address           string                 `json:"address"`
+	Status            string                 `json:"status"`
+	Heartbeat         string                 `json:"heartbeat"`
+	Roles             []string               `json:"roles"`
+	ActiveThreadCount int                    `json:"activeThreadCount"`
+	Queued            string                 `json:"queued"`
+	Events            []EventsNodeClusterDTO `json:"events"`
+	StartTime         string                 `json:"nodeStartTime"`
+}
+
+type ClusterDTO struct {
+	NodeCluster []NodeClusterDTO `json:"nodes"`
+}
+type ClusterEntity struct {
+	Cluster ClusterDTO `json:"cluster"`
+}

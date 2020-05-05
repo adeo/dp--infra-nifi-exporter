@@ -195,6 +195,24 @@ func (c *Client) GetSystemDiagnostics(nodewise bool, clusterNodeId string) (*Sys
 	return &entity.SystemDiagnostics, nil
 }
 
+func (c *Client) GetCluster(nodewise bool, clusterNodeId string) (*ClusterDTO, error) {
+	query := url.Values{}
+	if nodewise {
+		query.Add("nodewise", "1")
+	} else {
+		query.Add("nodewise", "0")
+	}
+	if len(clusterNodeId) > 0 {
+		query.Add("clusterNodeId", clusterNodeId)
+	}
+
+	var entity ClusterEntity
+	if err := c.request("/controller/cluster", query, &entity); err != nil {
+		return nil, errors.Trace(err)
+	}
+	return &entity.Cluster, nil
+}
+
 func (c *Client) request(path string, query url.Values, responseEntity interface{}) error {
 	token, err := c.getToken()
 	if err != nil {
