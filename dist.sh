@@ -2,7 +2,7 @@
 set -xeo pipefail
 
 NAME=nifi_exporter
-VERSION=$(git describe | sed 's/^v//')
+VERSION=$(git describe | sed 's/^v//' | cut -d'-' -f1)
 BUILD_DIR=./dist
 GOOS_LIST=(linux darwin windows)
 GOARCH_LIST=(386 amd64)
