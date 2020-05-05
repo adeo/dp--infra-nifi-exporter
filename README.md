@@ -39,7 +39,7 @@ docker run -p 9103:9103 -v /path/to/config.yml:/config/config.yml:ro diarworld/n
 Download a release package for your system from [Releases page](https://github.com/diarworld/nifi_exporter/releases), unpack it and run the binary directly:
 
 ```sh
-curl -fLO https://github.com/diarworld/nifi_exporter/releases/download/v0.3.0/nifi_exporter-0.3.0.linux-amd64.tar.gz
+curl -fLO https://github.com/diarworld/nifi_exporter/releases/download/0.3.0/nifi_exporter-0.3.0.linux-amd64.tar.gz
 tar -xvf nifi_exporter-0.3.0.linux-amd64.tar.gz
 cd ./nifi_exporter-0.3.0.linux-amd64
 ./nifi_exporter /path/to/config.yml

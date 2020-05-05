@@ -1,8 +1,8 @@
 package collectors
 
 import (
-	"github.com/juju/errors"
 	"github.com/diarworld/nifi_exporter/nifi/client"
+	"github.com/juju/errors"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
