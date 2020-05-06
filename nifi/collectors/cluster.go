@@ -1,10 +1,12 @@
 package collectors
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"code.cloudfoundry.org/bytefmt"
 	"github.com/diarworld/nifi_exporter/nifi/client"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -149,8 +151,9 @@ func (c *ClusterCollector) Collect(ch chan<- prometheus.Metric) {
 			}
 
 			nodeQueues := strings.Split(node.Queued, " / ")
-			nodeQueueFlow, parseError := strconv.ParseUint(nodeQueues[0], 0, 64)
-			if parseError == nil {
+			reg, regError := regexp.Compile("[^0-9]+")
+			nodeQueueFlow, parseError := strconv.ParseUint(reg.ReplaceAllString(nodeQueues[0], ""), 0, 64)
+			if parseError == nil && regError == nil {
 				ch <- prometheus.MustNewConstMetric(
 					c.clusterMetrics.queuedFlowfiles,
 					prometheus.GaugeValue,
@@ -159,12 +162,26 @@ func (c *ClusterCollector) Collect(ch chan<- prometheus.Metric) {
 					node.Address,
 				)
 			}
-			nodeQueuesBytes, parseError := strconv.ParseUint(strings.Split(nodeQueues[1], " ")[0], 0, 64)
-			if parseError == nil {
+
+			nodeQueueFmt := strings.Split(nodeQueues[1], " ")
+			nodeQueueFmtStr := ""
+			if nodeQueueFmt[1] == "bytes" {
+				nodeQueueFmtStr = nodeQueueFmt[0] + "B"
+			} else {
+				nodeQueueFmtStr = strings.Join(nodeQueueFmt, "")
+			}
+
+			nodeQueueBytes, parseError := bytefmt.ToBytes(nodeQueueFmtStr)
+			if parseError != nil {
+				log.WithFields(log.Fields{
+					"Error:": parseError,
+					"string": nodeQueueFmtStr,
+				}).Error("Flow queue parse error")
+			} else {
 				ch <- prometheus.MustNewConstMetric(
 					c.clusterMetrics.queuedBytes,
 					prometheus.GaugeValue,
-					float64(nodeQueuesBytes),
+					float64(nodeQueueBytes),
 					node.NodeID,
 					node.Address,
 				)
@@ -182,15 +199,6 @@ func (c *ClusterCollector) Collect(ch chan<- prometheus.Metric) {
 			default:
 				disconnectedNodes++
 			}
-
-			log.WithFields(log.Fields{
-				"Address":           node.Address,
-				"activeThreadCount": node.ActiveThreadCount,
-				"queued":            nodeQueueFlow,
-				"queuedBytes":       nodeQueuesBytes,
-				"nodeStartTime":     nodeStartTime.Unix(),
-				"nodeStatus":        node.Status,
-			}).Info("Intialize collect cluster metrics")
 		}
 		ch <- prometheus.MustNewConstMetric(
 			c.clusterMetrics.totalNodes,
