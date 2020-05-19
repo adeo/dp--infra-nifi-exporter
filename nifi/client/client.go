@@ -143,8 +143,10 @@ func (c *Client) getDeepConnections(parentID string, connectionsEntity *Connecti
 	}
 
 	for _, pg := range pgentity.ProcessGroups {
-		if err := c.getDeepConnections(pg.ID, connectionsEntity); err != nil {
-			return err
+		if pg.RunningCount > 0 {
+			if err := c.getDeepConnections(pg.ID, connectionsEntity); err != nil {
+				return err
+			}
 		}
 	}
 	connectionsEntity.Connections = append(connectionsEntity.Connections, entity.Connections...)
@@ -169,8 +171,10 @@ func (c *Client) getDeepProcessGroups(parentID string, groupsEntity *ProcessGrou
 	}
 
 	for _, pg := range entity.ProcessGroups {
-		if err := c.getDeepProcessGroups(pg.ID, groupsEntity); err != nil {
-			return err
+		if pg.RunningCount > 0 {
+			if err := c.getDeepProcessGroups(pg.ID, groupsEntity); err != nil {
+				return err
+			}
 		}
 	}
 	groupsEntity.ProcessGroups = append(groupsEntity.ProcessGroups, entity.ProcessGroups...)
