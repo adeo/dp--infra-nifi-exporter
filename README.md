@@ -31,7 +31,7 @@ See the [sample config](./sample-config.yml) for a full example of all available
 Docker image is available at [Docker Hub](https://hub.docker.com/diarworld/nifi_exporter):
 
 ```sh
-docker run -p 9103:9103 -v /path/to/config.yml:/config/config.yml:ro diarworld/nifi_exporter:0.3.1
+docker run -p 9103:9103 -v /path/to/config.yml:/config/config.yml:ro diarworld/nifi_exporter:0.3.2
 ```
 
 ### Without Docker
@@ -39,9 +39,9 @@ docker run -p 9103:9103 -v /path/to/config.yml:/config/config.yml:ro diarworld/n
 Download a release package for your system from [Releases page](https://github.com/diarworld/nifi_exporter/releases), unpack it and run the binary directly:
 
 ```sh
-curl -fLO https://github.com/diarworld/nifi_exporter/releases/download/v0.3.1/nifi_exporter-0.3.1.linux-amd64.tar.gz
-tar -xvf nifi_exporter-0.3.1.linux-amd64.tar.gz
-cd ./nifi_exporter-0.3.1.linux-amd64
+curl -fLO https://github.com/diarworld/nifi_exporter/releases/download/v0.3.2/nifi_exporter-0.3.2.linux-amd64.tar.gz
+tar -xvf nifi_exporter-0.3.2.linux-amd64.tar.gz
+cd ./nifi_exporter-0.3.2.linux-amd64
 ./nifi_exporter /path/to/config.yml
 ```
 
