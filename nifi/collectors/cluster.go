@@ -129,64 +129,64 @@ func (c *ClusterCollector) Collect(ch chan<- prometheus.Metric) {
 	if len(cluster.NodeCluster) > 0 {
 		for i := range cluster.NodeCluster {
 			node := &cluster.NodeCluster[i]
-
-			ch <- prometheus.MustNewConstMetric(
-				c.clusterMetrics.activeThreadCount,
-				prometheus.GaugeValue,
-				float64(node.ActiveThreadCount),
-				node.NodeID,
-				node.Address,
-			)
-
-			layout := "01/02/2006 15:04:05 MSK"
-			nodeStartTime, parseError := time.Parse(layout, node.StartTime)
-			if parseError == nil {
+			if node.Status == "CONNECTED" {
 				ch <- prometheus.MustNewConstMetric(
-					c.clusterMetrics.nodeStartTime,
+					c.clusterMetrics.activeThreadCount,
 					prometheus.GaugeValue,
-					float64(nodeStartTime.Unix()),
+					float64(node.ActiveThreadCount),
 					node.NodeID,
 					node.Address,
 				)
-			}
 
-			nodeQueues := strings.Split(node.Queued, " / ")
-			reg, regError := regexp.Compile("[^0-9]+")
-			nodeQueueFlow, parseError := strconv.ParseUint(reg.ReplaceAllString(nodeQueues[0], ""), 0, 64)
-			if parseError == nil && regError == nil {
-				ch <- prometheus.MustNewConstMetric(
-					c.clusterMetrics.queuedFlowfiles,
-					prometheus.GaugeValue,
-					float64(nodeQueueFlow),
-					node.NodeID,
-					node.Address,
-				)
-			}
+				layout := "01/02/2006 15:04:05 MSK"
+				nodeStartTime, parseError := time.Parse(layout, node.StartTime)
+				if parseError == nil {
+					ch <- prometheus.MustNewConstMetric(
+						c.clusterMetrics.nodeStartTime,
+						prometheus.GaugeValue,
+						float64(nodeStartTime.Unix()),
+						node.NodeID,
+						node.Address,
+					)
+				}
 
-			nodeQueueFmt := strings.Split(nodeQueues[1], " ")
-			nodeQueueFmtStr := ""
-			if nodeQueueFmt[1] == "bytes" {
-				nodeQueueFmtStr = nodeQueueFmt[0] + "B"
-			} else {
-				nodeQueueFmtStr = strings.Join(nodeQueueFmt, "")
-			}
+				nodeQueues := strings.Split(node.Queued, " / ")
+				reg, regError := regexp.Compile("[^0-9]+")
+				nodeQueueFlow, parseError := strconv.ParseUint(reg.ReplaceAllString(nodeQueues[0], ""), 0, 64)
+				if parseError == nil && regError == nil {
+					ch <- prometheus.MustNewConstMetric(
+						c.clusterMetrics.queuedFlowfiles,
+						prometheus.GaugeValue,
+						float64(nodeQueueFlow),
+						node.NodeID,
+						node.Address,
+					)
+				}
 
-			nodeQueueBytes, parseError := bytefmt.ToBytes(nodeQueueFmtStr)
-			if parseError != nil {
-				log.WithFields(log.Fields{
-					"Error:": parseError,
-					"string": nodeQueueFmtStr,
-				}).Error("Flow queue parse error")
-			} else {
-				ch <- prometheus.MustNewConstMetric(
-					c.clusterMetrics.queuedBytes,
-					prometheus.GaugeValue,
-					float64(nodeQueueBytes),
-					node.NodeID,
-					node.Address,
-				)
+				nodeQueueFmt := strings.Split(nodeQueues[1], " ")
+				nodeQueueFmtStr := ""
+				nodeQueueFmt[0] = strings.Replace(nodeQueueFmt[0], ",", "", -1)
+				if nodeQueueFmt[1] == "bytes" {
+					nodeQueueFmtStr = nodeQueueFmt[0] + "B"
+				} else {
+					nodeQueueFmtStr = strings.Join(nodeQueueFmt, "")
+				}
+				nodeQueueBytes, parseError := bytefmt.ToBytes(nodeQueueFmtStr)
+				if parseError != nil {
+					log.WithFields(log.Fields{
+						"Error:": parseError,
+						"string": nodeQueueFmtStr,
+					}).Error("Flow queue parse error")
+				} else {
+					ch <- prometheus.MustNewConstMetric(
+						c.clusterMetrics.queuedBytes,
+						prometheus.GaugeValue,
+						float64(nodeQueueBytes),
+						node.NodeID,
+						node.Address,
+					)
+				}
 			}
-
 			switch {
 			case node.Status == "CONNECTED":
 				connectedNodes++
